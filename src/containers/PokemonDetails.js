@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import {CircularProgress, Box, withStyles, Typography, Grid, Button} from "@material-ui/core";
 import { connect } from 'react-redux';
 import FavoriteIcon from "@material-ui/icons/Favorite";
+import { toggleFavourite } from "../redux/actions";
 
 const styles = (theme)=>({
     pokedexContainer:{
@@ -33,7 +34,7 @@ const styles = (theme)=>({
         height: "0.01mm",
         width: "95%"
     },
-    favorite:{
+    favourite:{
         height: 50,
         marginTop: "15px",
         width: 50
@@ -44,6 +45,7 @@ const styles = (theme)=>({
     }
 
 })
+
 export function withRouter(Children){
     return(props)=>{
 
@@ -69,6 +71,16 @@ const PokemonDetails = withRouter(
             }
         })
     }
+    favouriteChecker(pokemon){
+        let found = false
+        this.props.favourites?.map((p)=>{
+            if(p.id=== pokemon.id){
+                found=true
+            }
+        })
+        return found
+
+    }
     render() {
         const {classes} = this.props
         const {pokemon} = this.state
@@ -86,8 +98,9 @@ const PokemonDetails = withRouter(
                                 <hr className={classes.separator}/>
                                 <Grid container>
                                     <Grid item md={1}>
-                                        <Button className={classes.favorite}>
-                                            <FavoriteIcon style={{color:"white", fontSize: 50 }}/>
+                                        <Button className={classes.favourite}
+                                                onClick={()=>this.props.toggleFavourite(pokemon)} >
+                                            <FavoriteIcon style={{color:this.favouriteChecker(pokemon)? "red" : "white", fontSize: 50 }}/>
 
                                         </Button>
                                     </Grid>
@@ -132,6 +145,16 @@ const PokemonDetails = withRouter(
 
         }else return(<CircularProgress/>)
     }
-}
-)
-export default withStyles(styles)(PokemonDetails);
+})
+
+const mapStateToProps = (state) => ({
+    favourites: state.favourites
+});
+
+const mapDispatchToProps = (dispatch) => ({
+    toggleFavourite: (pokemon) => dispatch(toggleFavourite(pokemon)),
+});
+
+export default withStyles(styles)(
+    connect(mapStateToProps, mapDispatchToProps)(PokemonDetails)
+);
